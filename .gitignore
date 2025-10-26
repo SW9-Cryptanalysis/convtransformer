@@ -1,2 +1,6 @@
 *.pyc 
 .idea/
+ciphers
+ciphers_copy
+test
+train
