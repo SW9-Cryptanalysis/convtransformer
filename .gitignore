@@ -4,3 +4,9 @@ ciphers
 ciphers_copy
 test
 train
+data
+convtransformer/build
+convtransformer/checkpoints-conv-cipher
+convtransformer/fairseq_data_bin
+convtransformer/fairseq.egg-info
+convtransformer/fairseq/libbleu.cpython-312-x86_64-linux-gnu.so

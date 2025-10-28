@@ -266,7 +266,8 @@ def resolve_max_positions(*args):
                     map(nullsafe_min, zip(max_positions, arg))
                 )
 
-    return max_positions
+    #return max_positions
+    return (30000, 30000)  # Temporary fix for max positions issue
 
 
 def import_user_module(args):

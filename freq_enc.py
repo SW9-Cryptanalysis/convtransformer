@@ -1,5 +1,6 @@
 import os
 import json
+import random
 from typing import List, Dict, Tuple
 from collections import Counter
 
@@ -35,17 +36,15 @@ def freq_enc(text: str) -> str:
     encoded_list = [str(char_to_rank_id[token]) for token in tokens]
     return " ".join(encoded_list)
 
-
-def fairseq_data(input_data_dir: str, train_output_dir: str, test_output_dir: str):
+def fairseq_data(input_data_dir: str, output_data_dir: str, validation_split: float = 0.02):
     """
-    Reads JSON files, sorts them, and writes the aggregated, space-separated 
-    .src/.tgt and .freq files.
+    Reads JSON files, splits training data for validation, and writes the 
+    aggregated raw data files (.src, .tgt) for Fairseq preprocessing.
     """
     
-    os.makedirs(train_output_dir, exist_ok=True)
-    os.makedirs(test_output_dir, exist_ok=True)
+    os.makedirs(output_data_dir, exist_ok=True)
     
-    train_files: List[str] = []
+    all_train_files: List[str] = []
     test_files: List[str] = []
     
     for filename in os.listdir(input_data_dir):
@@ -55,21 +54,31 @@ def fairseq_data(input_data_dir: str, train_output_dir: str, test_output_dir: st
             if filename.startswith('test-cipher-'):
                 test_files.append(file_path)
             else:
-                train_files.append(file_path)
+                all_train_files.append(file_path)
 
-    if not train_files and not test_files:
+    if not all_train_files and not test_files:
         print("Error: No JSON files found in the input directory.")
         return
 
-    print(f"Training ciphers identified: {len(train_files)}")
-    print(f"Testing ciphers identified: {len(test_files)}")
+    random.shuffle(all_train_files)
+    
+    split_index = int(len(all_train_files) * validation_split)
+    valid_files = all_train_files[:split_index]
+    train_files = all_train_files[split_index:]
 
-    write_aggregated_files(train_files, train_output_dir, 'data')
-    write_aggregated_files(test_files, test_output_dir, 'data')
+    print(f"Total Ciphers Found: {len(all_train_files) + len(test_files)}")
+    print(f"  Training Files: {len(train_files)}")
+    print(f"  Validation Files (Split: {validation_split:.2f}): {len(valid_files)}")
+    print(f"  Testing Files: {len(test_files)}")
 
-    print("\nData preparation complete. Output Structure:")
-    print(f"  Training Files: {os.path.join(train_output_dir, 'data.src')}, {os.path.join(train_output_dir, 'data.tgt')} and {os.path.join(train_output_dir, 'data.freq')}")
-    print(f"  Testing Files: {os.path.join(test_output_dir, 'data.src')}, {os.path.join(test_output_dir, 'data.tgt')} and {os.path.join(test_output_dir, 'data.freq')}")
+    write_aggregated_files(train_files, output_data_dir, 'train')
+    write_aggregated_files(valid_files, output_data_dir, 'valid')
+    write_aggregated_files(test_files, output_data_dir, 'test')
+
+    print("\nData preparation complete. Raw files for Fairseq Preprocessing are:")
+    print(f"  {output_data_dir}/train.src, train.tgt")
+    print(f"  {output_data_dir}/valid.src, valid.tgt")
+    print(f"  {output_data_dir}/test.src, test.tgt")
 
 
 def write_aggregated_files(file_list: List[str], output_dir: str, prefix: str):
