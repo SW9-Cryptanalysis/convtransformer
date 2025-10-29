@@ -176,13 +176,24 @@ class Generator():
                 return hypo_str
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-source_sentence', type=str)
-    parser.add_argument('-path_checkpoint', type=str)
-    parser.add_argument('-data_bin', type=str)
+    parser = argparse.ArgumentParser(description='Interactive generation with positional arguments.')
+    
+    # 1. Positional: data_bin (Must be the first, as it's required by the Generator's __init__)
+    parser.add_argument('data_bin', type=str, 
+                        help='Path to the binarized data directory (e.g., UN-bin/multilingual/fres-en/).')
+    
+    # 2. Positional: path_checkpoint
+    parser.add_argument('path_checkpoint', type=str, 
+                        help='Path to the model checkpoint file (e.g., checkpoints/checkpoint30.pt).')
+                        
+    # 3. Positional: source_sentence
+    parser.add_argument('source_sentence', type=str, 
+                        help='The sentence to be translated, enclosed in quotes.')
+    
     args = parser.parse_args()
 
-    gen = Generator(args.data_bin, args.path_checkpoint)
-    print(gen.generate(args.source_sentence))
 
-    
+
+    # The Generator call remains the same, using the arguments gathered positionally
+    gen = Generator(args.data_bin, args.path_checkpoint.strip())
+    print(gen.generate(args.source_sentence))
